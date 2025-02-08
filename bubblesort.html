@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bubble Sort Visualizer</title>
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary-color: #6a82fb;
+      --primary-hover: #a29bfe;
+      --accent-color: #fddb92;
+      --bg-gradient: linear-gradient(135deg, #667eea, #764ba2);
+      --control-bg: rgba(255, 255, 255, 0.95);
+      --container-bg: rgba(255, 255, 255, 0.9);
+      --transition: 0.3s ease;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: var(--bg-gradient);
+      font-family: 'Montserrat', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      color: #333;
+      position: relative;
+      overflow-x: hidden;
+    }
+    /* Abstract Background Shapes */
+    .abstract-shape {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.6;
+      filter: blur(60px);
+      z-index: 0;
+      animation: float 30s infinite alternate ease-in-out;
+    }
+    .shape1 {
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, var(--accent-color), transparent);
+      top: -80px;
+      left: -80px;
+    }
+    .shape2 {
+      width: 350px;
+      height: 350px;
+      background: radial-gradient(circle, var(--accent-color), transparent);
+      bottom: -100px;
+      right: -100px;
+      animation-duration: 35s;
+    }
+    @keyframes float {
+      from { transform: translate(0, 0); }
+      to { transform: translate(30px, 30px); }
+    }
+    header {
+      margin-top: 40px;
+      margin-bottom: 20px;
+      text-align: center;
+      z-index: 10;
+    }
+    header h1 {
+      font-size: 3rem;
+      color: #fff;
+      text-shadow: 2px 2px 8px rgba(0,0,0,0.4);
+    }
+    /* Custom Array and Random Array Controls */
+    .custom-array {
+      background: var(--control-bg);
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+      padding: 15px 20px;
+      margin-bottom: 20px;
+      z-index: 10;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+    }
+    .custom-array input[type="text"],
+    .custom-array input[type="number"] {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    .custom-array button {
+      padding: 10px 20px;
+      background: var(--primary-color);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background var(--transition);
+    }
+    .custom-array button:hover {
+      background: var(--primary-hover);
+    }
+    /* Step Controls (including Speed Control) */
+    .step-controls {
+      background: var(--control-bg);
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+      padding: 15px 20px;
+      margin-bottom: 20px;
+      z-index: 10;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+    }
+    .step-controls button {
+      padding: 10px 20px;
+      background: var(--primary-color);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background var(--transition);
+    }
+    .step-controls button:hover {
+      background: var(--primary-hover);
+    }
+    .step-controls label {
+      font-size: 1rem;
+      color: #333;
+    }
+    .step-controls input[type="range"] {
+      width: 150px;
+    }
+    .step-controls span {
+      font-size: 1rem;
+      color: #333;
+      min-width: 40px;
+      text-align: center;
+    }
+    /* Visualization Container */
+    .container {
+      width: 90%;
+      max-width: 1000px;
+      height: 80vh;
+      max-height: 600px;
+      background: var(--container-bg);
+      border: 2px solid rgba(255,255,255,0.9);
+      border-radius: 12px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 10px;
+      margin-bottom: 20px;
+      z-index: 10;
+      overflow-y: auto;
+    }
+    .bar {
+      margin: 0 2px;
+      transition: height var(--transition), background-color var(--transition);
+    }
+    /* Add outlines and shadow to active bars */
+    .bar.active {
+      outline: 3px solid #000;
+      outline-offset: 2px;
+      box-shadow: 0 0 10px 4px rgba(0, 0, 0, 0.5);
+    }
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 2.2rem;
+      }
+      .custom-array, .step-controls {
+        flex-direction: column;
+      }
+      .custom-array input[type="text"],
+      .custom-array input[type="number"],
+      .step-controls input[type="range"] {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Abstract Background Shapes -->
+  <div class="abstract-shape shape1"></div>
+  <div class="abstract-shape shape2"></div>
+  
+  <header>
+    <h1>Bubble Sort Visualizer</h1>
+  </header>
+  
+  <!-- Custom Array and Random Array Controls -->
+  <section class="custom-array">
+    <input type="text" id="customArrayInput" placeholder="Enter comma-separated numbers e.g. 34,12,5,67" />
+    <button id="setCustomArray">Set Custom Array</button>
+    <span style="font-weight: bold; color: #333;">OR</span>
+    <input type="number" id="arraySize" min="5" max="100" value="40" />
+    <button id="generateRandomArray">Generate Random Array</button>
+  </section>
+  
+  <!-- Step Controls Section (with Speed Control) -->
+  <section class="step-controls">
+    <button id="prevStep">Previous</button>
+    <button id="nextStep">Next</button>
+    <button id="startAuto">Start Auto Sort</button>
+    <button id="stopAuto">Stop</button>
+    <label for="speedControl">Speed (ms):</label>
+    <input type="range" id="speedControl" min="50" max="2000" step="50" value="500" />
+    <span id="speedValue">500</span>
+  </section>
+  
+  <!-- Visualization Container -->
+  <div class="container" id="arrayContainer"></div>
+  
+  <script>
+    // Global Variables
+    let steps = []; // Array of steps for bubble sort
+    let currentStep = 0;
+    let autoRunInterval = null;
+    let baseArray = [];
+    
+    const arrayContainer = document.getElementById('arrayContainer');
+    const customArrayInput = document.getElementById('customArrayInput');
+    const setCustomArrayBtn = document.getElementById('setCustomArray');
+    const arraySizeInput = document.getElementById('arraySize');
+    const generateRandomArrayBtn = document.getElementById('generateRandomArray');
+    
+    const prevStepBtn = document.getElementById('prevStep');
+    const nextStepBtn = document.getElementById('nextStep');
+    const startAutoBtn = document.getElementById('startAuto');
+    const stopAutoBtn = document.getElementById('stopAuto');
+    
+    const speedControl = document.getElementById('speedControl');
+    const speedValue = document.getElementById('speedValue');
+    
+    // Set auto-run speed based on slider
+    let autoDelay = parseInt(speedControl.value);
+    speedControl.addEventListener('input', () => {
+      autoDelay = parseInt(speedControl.value);
+      speedValue.textContent = autoDelay;
+    });
+    
+    // Compute bubble sort steps
+    function computeBubbleSortSteps(arr) {
+      let steps = [];
+      let a = arr.slice(); // copy of array
+      steps.push({ state: a.slice(), compared: [] });
+      let n = a.length;
+      for (let i = 0; i < n - 1; i++) {
+        for (let j = 0; j < n - i - 1; j++) {
+          // Record step before comparison
+          steps.push({ state: a.slice(), compared: [j, j + 1] });
+          if (a[j] > a[j + 1]) {
+            // Swap elements
+            [a[j], a[j + 1]] = [a[j + 1], a[j]];
+            // Record step after swap
+            steps.push({ state: a.slice(), compared: [j, j + 1] });
+          }
+        }
+      }
+      return steps;
+    }
+    
+    // Update the visualization for the current step with scaling
+    function updateVisualization() {
+      if (!steps.length) return;
+      const { state, compared } = steps[currentStep];
+      arrayContainer.innerHTML = '';
+      const n = state.length;
+      const containerHeight = arrayContainer.clientHeight;
+      const maxValue = Math.max(...state);
+      for (let i = 0; i < n; i++) {
+        const bar = document.createElement('div');
+        bar.classList.add('bar');
+        // Scale the height relative to the container's height
+        const height = maxValue ? (state[i] / maxValue) * containerHeight : 0;
+        bar.style.height = height + 'px';
+        // Dynamically set width so that all bars fit in the container
+        bar.style.width = (100 / n - 0.5) + '%';
+        // Assign a unique color using HSL based on index
+        bar.style.backgroundColor = 'hsl(' + (i * (360 / n)) + ', 70%, 50%)';
+        if (compared.includes(i)) {
+          bar.classList.add('active');
+        }
+        arrayContainer.appendChild(bar);
+      }
+    }
+    
+    // Set custom array from user input
+    function setCustomArray() {
+      const input = customArrayInput.value.trim();
+      if (!input) {
+        alert("Please enter a comma-separated list of numbers.");
+        return;
+      }
+      // Parse numbers from input
+      const arr = input.split(',').map(num => parseFloat(num.trim())).filter(num => !isNaN(num));
+      if (arr.length === 0) {
+        alert("Invalid input. Please enter valid numbers separated by commas.");
+        return;
+      }
+      baseArray = arr;
+      steps = computeBubbleSortSteps(baseArray);
+      currentStep = 0;
+      updateVisualization();
+    }
+    
+    // Generate a random array based on size input
+    function generateRandomArray() {
+      const size = parseInt(arraySizeInput.value);
+      if (isNaN(size) || size < 5) {
+        alert("Please enter a valid array size (minimum 5).");
+        return;
+      }
+      baseArray = [];
+      for (let i = 0; i < size; i++) {
+        const value = Math.floor(Math.random() * 300) + 20;
+        baseArray.push(value);
+      }
+      steps = computeBubbleSortSteps(baseArray);
+      currentStep = 0;
+      updateVisualization();
+    }
+    
+    // Event listeners for custom array controls
+    setCustomArrayBtn.addEventListener('click', setCustomArray);
+    generateRandomArrayBtn.addEventListener('click', generateRandomArray);
+    
+    // Step control event listeners
+    nextStepBtn.addEventListener('click', () => {
+      if (currentStep < steps.length - 1) {
+        currentStep++;
+        updateVisualization();
+      }
+    });
+    
+    prevStepBtn.addEventListener('click', () => {
+      if (currentStep > 0) {
+        currentStep--;
+        updateVisualization();
+      }
+    });
+    
+    startAutoBtn.addEventListener('click', () => {
+      // Prevent multiple auto-runs
+      if (autoRunInterval) return;
+      autoRunInterval = setInterval(() => {
+        if (currentStep < steps.length - 1) {
+          currentStep++;
+          updateVisualization();
+        } else {
+          clearInterval(autoRunInterval);
+          autoRunInterval = null;
+        }
+      }, autoDelay);
+    });
+    
+    stopAutoBtn.addEventListener('click', () => {
+      if (autoRunInterval) {
+        clearInterval(autoRunInterval);
+        autoRunInterval = null;
+      }
+    });
+    
+    // Initialize with a random array on page load
+    window.onload = generateRandomArray;
+  </script>
+</body>
+</html>
